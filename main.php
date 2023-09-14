@@ -17,7 +17,7 @@ final class ApplicationVersion {
 		$branch = trim(exec('git rev-parse --abbrev-ref HEAD'));
 		$hash = trim(exec('git describe --dirty --always --tags'));
 		$when = new \DateTime(trim(exec('git log -n1 --pretty=%ci HEAD')));
-		$when->setTimezone(new \DateTimeZone('UTC'));
+		$when->setTimezone(new \DateTimeZone('America/New_York'));
 
 		return sprintf('v%s.%s.%s-%s.%s (%s)', self::MAJOR, self::MINOR, self::PATCH, $branch, $hash, $when->format('Y-m-d H:i:s'));
 	}
