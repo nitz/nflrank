@@ -433,11 +433,14 @@ function calculate_stats(data) {
 			let team1 = get_or_add_team_stats(id1);
 
 			if (match.status == DATA_GAME_STATUS_FINAL) {
+				// score comes in as a string, make sure it's a number so compares are correct.
+				let score0 = Number(data0.score);
+				let score1 = Number(data1.score);
 				// matches that are final add to W/L/T
-				if (data0.score > data1.score) {
+				if (score0 > score1) {
 					team0.addWin(data0, data1);
 					team1.addLoss(data1, data0);
-				} else if (data1.score > data0.score) {
+				} else if (score1 > score0) {
 					team0.addLoss(data0, data1);
 					team1.addWin(data1, data0);
 				} else {
