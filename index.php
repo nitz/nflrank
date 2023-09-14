@@ -9,6 +9,8 @@
 		echo "Error: {$e->getMessage()}";
 		die;
 	}
+
+	$ver = "v={$app->getVersionShort()}";
 ?>
 
 <!doctype html>
@@ -25,7 +27,7 @@
 
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 
-	<link href="main.css" rel="stylesheet">
+	<link href="main.css?<?= $ver ?>" rel="stylesheet">
 	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
 	<meta name="theme-color" content="#fafafa">
@@ -34,7 +36,7 @@
 	<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.13.3/html5sortable.min.js" integrity="sha512-3btxfhQfasdVcv1dKYZph5P7jFeeLRcF1gDVzFA+k9AiwwhB1MNI7O58zCK0uVItuMHNDR5pMoF2nqlCGzUwZQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-	<script src="main.js"></script>
+	<script src="main.js?<?= $ver ?>"></script>
 </head>
 
 <body class="body">

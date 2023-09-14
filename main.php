@@ -62,6 +62,11 @@ final class Main {
 		return ApplicationVersion::get();
 	}
 
+	// gets a short string representing the application version
+	public function getVersionShort(): string {
+		return ApplicationVersion::VERSION;
+	}
+
 	// gets a string representing the date and time the data was last updated
 	public function getDataLastModifiedDate(): string {
 		$stats = stat($this->_settings['data_file']);
