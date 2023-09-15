@@ -153,6 +153,8 @@ final class Main {
 			Utilities::fetchFileAndWriteToDisk($uri, $data_file_week);
 		}
 
+		Utilities::fetchTempFileCleanup();
+
 		$this->checkAndMerge($data_file_merged, $data_file_sched, $data_file_week);
 
 		return true;
@@ -309,8 +311,11 @@ final class Main {
 }
 
 final class Utilities {
+	private const /*string*/ TEMP_DATA_FOLDER = './';
+	private const /*string*/ TEMP_DATA_PREFIX = 'curl-';
+
 	public static function fetchFileAndWriteToDisk(string $remote_uri, string $destination_file): void {
-		$tmp_filename = tempnam('.', 'curl-');
+		$tmp_filename = tempnam(self::TEMP_DATA_FOLDER, self::TEMP_DATA_PREFIX);
 
 		if (!$tmp_filename) {
 			throw new Exception('Failed to get temporary file!');
@@ -361,6 +366,15 @@ final class Utilities {
 		}
 	}
 
+	public static function fetchTempFileCleanup(): void {
+		$files = glob(self::TEMP_DATA_FOLDER . self::TEMP_DATA_PREFIX . "*");
+		
+		foreach ($files as $file) {
+			if (file_exists($file) && !unlink($file)) {
+				throw new Exception("Failed to remove temporary file: '$file'");
+			}
+		}
+	}
 
 	// https://stackoverflow.com/a/18602474
 	public function getElapsedTimeAsHumanReadableString($datetime_or_string, bool $full = false): string {

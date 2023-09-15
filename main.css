@@ -170,8 +170,7 @@ tr[disabled] {
   border-right: 1px solid #cccf;
   font-weight: 400;
   text-transform: uppercase;
-  -bah-webkit-text-stroke: 1px black;
-    text-shadow:
+  text-shadow:
     -1px -1px 0 var(--text-stroke-color),
      0   -1px 0 var(--text-stroke-color),
      1px -1px 0 var(--text-stroke-color),
