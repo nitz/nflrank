@@ -37,7 +37,9 @@ final class Main {
 	private array $_settings = [
 		'data_api_old_uri' => 'https://api.myfantasyleague.com/' . self::LEAGUE_YEAR . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
 		'data_api_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched.json',
+		'data_api_week_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched_%d.json',
 		'data_file' => self::DATA_FOLDER . '/full.json',
+		'data_file_week' => self::DATA_FOLDER . '/week.json',
 		'data_update_seconds' => self::ONE_HOUR_SECONDS,
 		'data_update_live_seconds' => 15,
 	];
@@ -158,11 +160,14 @@ final class Main {
 			throw new Exception("Unexpected data version: {$data->version}");
 		}
 
+		$now = strtotime('now'); // now as a timestamp
+
 		$schedule = $data->fullNflSchedule->nflSchedule;
 
 		foreach ($schedule as $index => $week) {
 			$week_number = intval($week->week);
 
+			$past_kickoff = false;
 			$has_scheduled_game = false;
 			$has_live_game = false;
 			$has_final_game = false;
@@ -172,6 +177,9 @@ final class Main {
 			}
 
 			foreach ($week->matchup as $game) {
+				if ($now >= $game->kickoff) {
+					$past_kickoff = true;
+				}
 				switch ($game->status) {
 					case self::GAME_STATE_SCHEDULED:
 						$has_scheduled_game = true;
@@ -188,12 +196,16 @@ final class Main {
 				}
 			}
 
+			if (!$past_kickoff && !$has_final_game && !$has_live_game && $has_scheduled_game) {
+				break;
+			}
+
 			// if we have a final or live game and this is a larger week number,
 			// that is the active week we're in.
-			if (($has_final_game || $has_live_game) && ($week_number > $this->_weekNumber)) {
+			if (($past_kickoff || $has_final_game || $has_live_game) && ($week_number > $this->_weekNumber)) {
 				$this->_weekNumber = $week_number;
 				$this->_isFinal = !$has_scheduled_game  && !$has_live_game;
-				$this->_weekState = $has_live_game ? 'Live' : 'Final';
+				$this->_weekState = ($has_live_game || $has_scheduled_game) ? 'Live' : 'Final';
 			}
 
 			$this->_isLive = $this->_isLive || $has_live_game;
