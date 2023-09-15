@@ -784,6 +784,11 @@ function bind_input_paste_listener() {
 
 // initialize everything once the document is ready
 $(document).ready(() => {
+	// disable ajax caching
+	$.ajaxSetup({
+		cache: false,
+	});
+
 	// populate initial data
 	let rank = 1;
 	TEAMS.forEach(team => {
