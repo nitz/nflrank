@@ -50,7 +50,9 @@
 						<thead>
 							<tr></tr>
 						</thead>
-						<tr disabled></tr>
+						<tbody class="table-spacer">
+							<tr disabled></tr>
+						</tbody>
 						<tbody id="teams">
 						</tbody>
 					</table>
@@ -76,7 +78,7 @@
 				<div class="numbers">
 					<div class="numbers-item input">
 						<h6>Input</h6>
-						<textarea id="numbers-input" name="input" rows="32" cols="3" autocomplete="off" onclick="this.select();"></textarea>
+						<textarea id="numbers-input" name="input" rows="32" cols="1" autocomplete="off" onclick="this.select();"></textarea>
 						<br>
 						<button class="btn btn-secondary btn-sm" onclick="load_input_to_ranks();">Load</button>
 					</div>
@@ -87,7 +89,7 @@
 					</div>
 					<div class="numbers-item output">
 						<h6>Output</h6>
-						<textarea id="numbers-output" name="output" rows="32" cols="3" autocomplete="off"></textarea>
+						<textarea id="numbers-output" name="output" rows="32" cols="1" autocomplete="off"></textarea>
 						<br>
 						<button class="btn btn-primary btn-sm" onclick="copy_output_to_clipboard();">Copy</button>
 					</div>

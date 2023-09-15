@@ -284,6 +284,10 @@ td.rank {
   overflow: hidden;
 }
 
+textarea[name="input"] {
+  text-align: right;
+}
+
 #numbers-teams {
   /*border: none;*/
   outline: none;
