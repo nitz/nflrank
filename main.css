@@ -228,6 +228,14 @@ tr[disabled] {
   font-style: italic;
 }
 
+.last-live:before {
+  content: '* ';
+}
+
+.last-live:after {
+  content: ' *';
+}
+
 .last-scheduled {
   font-style: italic;
 }

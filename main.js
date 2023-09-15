@@ -42,6 +42,7 @@ const CLASS_NAME_RECORD = 'record';
 const CLASS_NAME_DIFFERENTIAL = 'differential';
 const CLASS_NAME_STREAK = 'streak';
 const CLASS_NAME_LAST = 'last';
+const CLASS_NAME_LAST_HEADER = 'last-week-header';
 const CLASS_NAME_MOVERS = 'movers';
 const CLASS_FRAGMENT_COLOR_BACKGROUND = '-bg';
 
@@ -61,7 +62,7 @@ const CLASS_NAME_LAST_LIVE = 'last-live';
 const CLASS_NAME_LAST_SCHEDULED = 'last-scheduled';
 
 // the table columns to create
-const TABLE_COLUMNS = [ '#', '', ['Team', CLASS_NAME_NAME], ['∆', CLASS_NAME_DELTA], 'W-L', 'Pts', 'Strk', 'Last' ];
+const TABLE_COLUMNS = [ '#', '', ['Team', CLASS_NAME_NAME], ['∆', CLASS_NAME_DELTA], 'W-L', 'Pts', 'Strk', ['Last', CLASS_NAME_LAST_HEADER] ];
 
 // specific element selectors
 const TABLE_ELEMENT_SELECTOR = '#the-league';
@@ -515,6 +516,8 @@ function populate_stats() {
 	});
 
 	populate_rank_and_delta_display();
+
+	$(`.${CLASS_NAME_LAST_HEADER}`).text(`Week ${DATA.currentWeek}`);
 }
 
 // updates each team row with it's current user rank,

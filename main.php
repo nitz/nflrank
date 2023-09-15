@@ -38,8 +38,9 @@ final class Main {
 		'data_api_old_uri' => 'https://api.myfantasyleague.com/' . self::LEAGUE_YEAR . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
 		'data_api_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched.json',
 		'data_api_week_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched_%d.json',
-		'data_file' => self::DATA_FOLDER . '/full.json',
-		'data_file_week' => self::DATA_FOLDER . '/week.json',
+		'data_file_sched' => self::DATA_FOLDER . 'sched.json',
+		'data_file_week' => self::DATA_FOLDER . 'week.json',
+		'data_file_merged' => self::DATA_FOLDER . 'full.json',
 		'data_update_seconds' => self::ONE_HOUR_SECONDS,
 		'data_update_live_seconds' => 15,
 	];
@@ -51,11 +52,11 @@ final class Main {
 
 	// the main entry point for the application.
 	public function run(): void {
-		$this->updateLiveStatus();
+		$this->updateLiveStatus($this->_settings['data_file_merged']);
 
 		// update the data if needed, and if we do, re-update live status
 		if ($this->updateData()) {
-			$this->updateLiveStatus();
+			$this->updateLiveStatus($this->_settings['data_file_merged']);
 		}
 	}
 
@@ -71,7 +72,12 @@ final class Main {
 
 	// gets a string representing the date and time the data was last updated
 	public function getDataLastModifiedDate(): string {
-		$stats = stat($this->_settings['data_file']);
+		$file = $this->_settings['data_file_merged'];
+		if (!file_exists($file)) {
+			return 'Updating, please refresh...';
+		}
+
+		$stats = stat($file);
 		if (is_array($stats)) {
 			$mtime = $stats['mtime'];
 			$mdate = new \DateTime();
@@ -103,25 +109,21 @@ final class Main {
 	}
 
 	// returns true if the data is stale, otherwise false
-	private function isDataStale(): bool {
+	private function isDataStale(string $file, int $stale_seconds): bool {
 
 		$stale = true;
 
-		$stale_time = $this->_isLive
-			? $this->_settings['data_update_live_seconds']
-			: $this->_settings['data_update_seconds'];
-
-		if (!file_exists($this->_settings['data_file'])) {
+		if (!file_exists($file)) {
 			return $stale;
 		}
 
-		$stats = stat($this->_settings['data_file']);
+		$stats = stat($file);
 
 		if (is_array($stats)) {
 			$now = strtotime('now');
 			$mtime = $stats['mtime'];
 			$delta = $now - $mtime;
-			$stale = $delta >= $this->_settings['data_update_seconds'];
+			$stale = $delta >= $stale_seconds;
 		}
 
 		return $stale;
@@ -130,30 +132,83 @@ final class Main {
 	// checks if the data is stale, and attempts to update it, if it is.
 	// returns true if the data was updated, false otherwise.
 	private function updateData(): bool {
+		$data_file_sched = $this->_settings['data_file_sched'];
+		$data_file_week = $this->_settings['data_file_week'];
+		$data_file_merged = $this->_settings['data_file_merged'];
 
-		if (!$this->isDataStale()) {
-			return false;
+		if ($this->isDataStale($data_file_sched, $this->_settings['data_update_seconds'])) {
+			Utilities::fetchFileAndWriteToDisk($this->_settings['data_api_uri'], $data_file_sched);
 		}
 
-		Utilities::fetchFileAndWriteToDisk($this->_settings['data_api_uri'], $this->_settings['data_file']);
+		// we can use the schedule to figure out what week we're in.
+		$this->updateWeek($data_file_sched);
+
+		// if we are live, we can update more often.
+		$stale_time = $this->_isLive
+			? $this->_settings['data_update_live_seconds']
+			: $this->_settings['data_update_seconds'];
+
+		if ($this->isDataStale($data_file_week, $stale_time)) {
+			$uri = sprintf($this->_settings['data_api_week_uri'], $this->_weekNumber);
+			Utilities::fetchFileAndWriteToDisk($uri, $data_file_week);
+		}
+
+		$this->checkAndMerge($data_file_merged, $data_file_sched, $data_file_week);
 
 		return true;
 	}
 
+	// checks if either the schedule data or week data is newer than merged.
+	// if so, merges the week data into the schedule data, and saves it as merged.
+	// this is because the week info updates more regularly than the full schedule.
+	private function checkAndMerge(string $merged, string $sched, string $week): void {
+		$merged_mtime = Utilities::getFileMtime($merged);
+		$sched_mtime = Utilities::getFileMtime($sched);
+		$week_mtime = Utilities::getFileMtime($week);
+
+		if ($sched_mtime == false) {
+			throw new Exception('Unable to get mtime for schedule data.');
+		}
+
+		if ($week_mtime == false) {
+			throw new Exception('Unable to get mtime for week data.');
+		}
+
+		if ($merged_mtime == false ||
+			($sched_mtime > $merged_mtime ||
+				$week_mtime > $merged_mtime)) {
+			// grab both data files
+			$data_sched_json = file_get_contents($sched);
+			$data_week_json = file_get_contents($week);
+
+			// decode the json
+			$data_sched = json_decode($data_sched_json);
+			$data_week = json_decode($data_week_json);
+
+			// merge the week info into the proper spot in the full schedule
+			$data_week_week_number = $data_week->nflSchedule->week;
+			$data_sched->fullNflSchedule->nflSchedule[$data_week_week_number - 1] = $data_week->nflSchedule;
+
+			// and save it as the merged.
+			$data_merged_json = json_encode($data_sched);
+			file_put_contents($merged, $data_merged_json);
+		}
+	}
+
 	// uses the latest data to determine a few stats about the state of the week.
-	private function updateLiveStatus(): void {
+	private function updateLiveStatus(string $target_file): void {
 		$this->_weekNumber = 0;
 		$this->_isLive = false;
 		$this->_isFinal = false;
 		$this->_weekState = "?";
 
 		// if we don't have a data file, assume we are 'live' til we fetch one.
-		if (!file_exists($this->_settings['data_file'])) {
+		if (!file_exists($target_file)) {
 			$this->_isLive = true;
 			return;
 		}
 
-		$data_json = file_get_contents($this->_settings['data_file']);
+		$data_json = file_get_contents($target_file);
 		$data = json_decode($data_json);
 
 		if ($data->version != self::DATA_EXPECTED_VERSION) {
@@ -209,6 +264,46 @@ final class Main {
 			}
 
 			$this->_isLive = $this->_isLive || $has_live_game;
+		}
+	}
+
+	// uses the given data file to try and determine which week of the season we're in my checking the current time against kickoff times
+	private function updateWeek(string $target_file): void {
+		$this->_weekNumber = 0;
+
+		// if we don't have a data file, assume we are 'live' til we fetch one.
+		if (!file_exists($target_file)) {
+			throw new Exception('No file to read data from, unable to determine week.');
+		}
+
+		$data_json = file_get_contents($target_file);
+		$data = json_decode($data_json);
+
+		if ($data->version != self::DATA_EXPECTED_VERSION) {
+			throw new Exception("Unexpected data version: {$data->version}");
+		}
+
+		$now = strtotime('now'); // now as a timestamp
+
+		$schedule = $data->fullNflSchedule->nflSchedule;
+
+		foreach ($schedule as $index => $week) {
+			$week_number = intval($week->week);
+
+			if (isset($week->matchup) == false) {
+				continue;
+			}
+
+			foreach ($week->matchup as $game) {
+				if ($now >= $game->kickoff) {
+					$this->_weekNumber = $week_number;
+					break;
+				}
+			}
+
+			if ($this->_weekNumber < $week_number) {
+				break;
+			}
 		}
 	}
 }
@@ -299,4 +394,19 @@ final class Utilities {
 		if (!$full) $string = array_slice($string, 0, 1);
 		return $string ? implode(', ', $string) . ' ago' : 'just now';
 	}
+
+	public function getFileMtime($file) {
+		if (!file_exists($file)) {
+			return false;
+		}
+
+		$stats = stat($file);
+
+		if (!is_array($stats)) {
+			return false;
+		}
+
+		return $stats['mtime'];
+	}
+
 }
