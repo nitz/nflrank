@@ -10,6 +10,7 @@
 		die;
 	}
 
+	$now = strtotime('now');
 	$ver = "v={$app->getVersionShort()}";
 ?>
 
@@ -46,7 +47,7 @@
 			<div class="main-item tool">
 				<div class="rank-table">
 					<h5>NFLPR Sort'em! <span class="week-status">Week <?= $app->getCurrentWeek() ?> (<?= $app->getCurrentWeekState() ?>)</span></h5>
-					<table id="the-league" data-live-week="<?= $app->getCurrentWeek() ?>">
+					<table id="the-league" data-live-week="<?= $app->getCurrentWeek() ?>" data-now="<?= $now ?>">
 						<thead>
 							<tr></tr>
 						</thead>

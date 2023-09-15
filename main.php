@@ -31,7 +31,7 @@ final class Main {
 	private const /*string*/ DATA_EXPECTED_VERSION = '1.0';
 	private const /*int*/ ONE_HOUR_SECONDS = 3600;
 	private const /*string*/ GAME_STATE_SCHEDULED = 'SCHED';
-	private const /*string*/ GAME_STATE_LIVE = 'LIVE';
+	private const /*string*/ GAME_STATE_LIVE = 'INPROG';
 	private const /*string*/ GAME_STATE_FINAL = 'FINAL';
 
 	private array $_settings = [

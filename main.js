@@ -78,7 +78,7 @@ const DATA_TEAM_ID_ATTR = 'data-team-id';
 
 // constant strings from league data
 const DATA_GAME_STATUS_SCHEDULED = 'SCHED';
-const DATA_GAME_STATUS_LIVE = 'LIVE';
+const DATA_GAME_STATUS_LIVE = 'INPROG';
 const DATA_GAME_STATUS_FINAL = 'FINAL';
 
 const DATA_GAME_WEEKS_START = 1;
