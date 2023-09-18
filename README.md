@@ -7,7 +7,7 @@ Probably broken on lots of platforms, and could use a lot of design love. Have a
 ## 📝 License
 nflrank is [licensed](./LICENSE) under the Zero-Clause BSD License (SPDX-License-Identifier: 0BSD). If you're interested in nflrank under other terms, please contact the authors. nflrank may make use of one or more open source packages. Those packages are each covered by their own copyrights and licenses, which are available via the tooling you use to restore the packages when building.
 
-Copyright © 2023 [Chris March Dailey](https://cmd.wtf)
+Copyright © 2023 [Chris Marc Dailey](https://cmd.wtf)
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
 
