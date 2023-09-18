@@ -337,8 +337,8 @@ class TeamStats {
 		}
 
 		this.results.push(result);
-		this.pointsFor = data_us.score;
-		this.pointsAgainst = data_them.score;
+		this.pointsFor += Number(data_us.score);
+		this.pointsAgainst += Number(data_them.score);
 		let away_char = (data_us.isHome != 0) ? HOME_SYMBOL : AWAY_SYMBOL;
 		this.last = `${data_us.score}-${data_them.score} ${away_char}${data_them.teamID}`.toUpperCase();
 		this.lastIsPending = false;
