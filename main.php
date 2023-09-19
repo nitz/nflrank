@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class ApplicationVersion {
 	public const /*int*/ MAJOR = 2;
 	public const /*int*/ MINOR = 0;
-	public const /*int*/ PATCH = 3;
+	public const /*int*/ PATCH = 4;
 	public const VERSION = "v" . self::MAJOR . "." . self::MINOR . "." . self::PATCH;
 
 	public static function get(): string {
@@ -17,7 +17,7 @@ final class ApplicationVersion {
 		$branch = trim(exec('git rev-parse --abbrev-ref HEAD'));
 		$hash = trim(exec('git describe --dirty --always --tags'));
 		$when = new \DateTime(trim(exec('git log -n1 --pretty=%ci HEAD')));
-		$when->setTimezone(new \DateTimeZone());
+		$when->setTimezone(new \DateTimeZone(Main::DEFAULT_TIMEZONE));
 
 		return sprintf('v%s.%s.%s-%s.%s (%s)', self::MAJOR, self::MINOR, self::PATCH, $branch, $hash, $when->format('Y-m-d H:i:s'));
 	}
@@ -34,7 +34,7 @@ final class Main {
 	private const /*string*/ GAME_STATE_LIVE = 'INPROG';
 	private const /*string*/ GAME_STATE_FINAL = 'FINAL';
 
-	private const /*string*/ DEFAULT_TIMEZONE = 'America/New_York';
+	public const /*string*/ DEFAULT_TIMEZONE = 'America/New_York';
 
 	private array $_settings = [
 		'data_api_old_uri' => 'https://api.myfantasyleague.com/' . self::LEAGUE_YEAR . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
