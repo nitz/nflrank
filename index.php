@@ -90,7 +90,7 @@
 					</div>
 					<div class="numbers-item output">
 						<h6>Output</h6>
-						<textarea id="numbers-output" name="output" rows="32" cols="1" autocomplete="off"></textarea>
+						<textarea id="numbers-output" name="output" rows="32" cols="1" autocomplete="off" onclick="this.select();"></textarea>
 						<br>
 						<button class="btn btn-primary btn-sm" onclick="copy_output_to_clipboard();">Copy</button>
 					</div>

@@ -771,7 +771,7 @@ function load_input_to_ranks() {
 // helper that copies the text from the output textarea to the user's clipboard.
 // bad: doesn't check for permission, etc. may fail on some platforms.
 async function copy_output_to_clipboard(e) {
-	await navigator.clipboard.writeText($(OUTPUT_TEXTAREA_SELECTOR).text);
+	await navigator.clipboard.writeText($(OUTPUT_TEXTAREA_SELECTOR).text());
 }
 
 // adds a listener to the input textarea to try to automatically load after a paste occurs.
