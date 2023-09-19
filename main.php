@@ -17,7 +17,7 @@ final class ApplicationVersion {
 		$branch = trim(exec('git rev-parse --abbrev-ref HEAD'));
 		$hash = trim(exec('git describe --dirty --always --tags'));
 		$when = new \DateTime(trim(exec('git log -n1 --pretty=%ci HEAD')));
-		$when->setTimezone(new \DateTimeZone('America/New_York'));
+		$when->setTimezone(new \DateTimeZone());
 
 		return sprintf('v%s.%s.%s-%s.%s (%s)', self::MAJOR, self::MINOR, self::PATCH, $branch, $hash, $when->format('Y-m-d H:i:s'));
 	}
@@ -33,6 +33,8 @@ final class Main {
 	private const /*string*/ GAME_STATE_SCHEDULED = 'SCHED';
 	private const /*string*/ GAME_STATE_LIVE = 'INPROG';
 	private const /*string*/ GAME_STATE_FINAL = 'FINAL';
+
+	private const /*string*/ DEFAULT_TIMEZONE = 'America/New_York';
 
 	private array $_settings = [
 		'data_api_old_uri' => 'https://api.myfantasyleague.com/' . self::LEAGUE_YEAR . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
@@ -52,6 +54,8 @@ final class Main {
 
 	// the main entry point for the application.
 	public function run(): void {
+		date_default_timezone_set(self::DEFAULT_TIMEZONE);
+
 		$this->updateLiveStatus($this->_settings['data_file_merged']);
 
 		// update the data if needed, and if we do, re-update live status
