@@ -63,6 +63,9 @@
 					<div class="app-version">
 						<?= $app->getVersion() ?>
 					</div>
+					<div class="source-links">
+						Found a bug? Please <a href="https://github.com/nitz/nflrank/issues/new/choose" target="_blank">report it</a>!
+					</div>
 				</div>
 			</div>
 			<div class="main-item sidebar">
@@ -99,7 +102,7 @@
 					Based on the wonderful work of <a href="https://old.reddit.com/u/ander1dw">ander1dw</a>. This tool wouldn't exist without you!
 					Styled similarly because nostalgia is a hell of a drug.
 					<br><br>
-					If you've found a bug, please yell at me on reddit or discord to fix it!
+					This tool is <a href="https://github.com/nitz/nflrank" target="_blank">open source</a>!
 				</div>
 			</div>
 		</div>

@@ -317,6 +317,10 @@ textarea[name="input"] {
   font-size: 7pt;
 }
 
+.source-links {
+  font-size: 7pt;
+}
+
 .numbers .teams textarea {
   text-align: justify;
   text-align-last: justify;
