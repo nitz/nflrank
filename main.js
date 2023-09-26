@@ -760,7 +760,6 @@ function load_input_to_ranks() {
 	let teams_eles = teams_root_ele.children(`[${DATA_TEAM_ID_ATTR}]`).detach();
 
 	Array.from(STATS.values()).sort(by_original_rank).forEach(stat => {
-		console.log(`appending ${stat.id} (${stat.rank})`);
 		teams_root_ele.append(stat.team.element);
 	});
 
@@ -771,7 +770,8 @@ function load_input_to_ranks() {
 // helper that copies the text from the output textarea to the user's clipboard.
 // bad: doesn't check for permission, etc. may fail on some platforms.
 async function copy_output_to_clipboard(e) {
-	await navigator.clipboard.writeText($(OUTPUT_TEXTAREA_SELECTOR).text());
+	let output = $(OUTPUT_TEXTAREA_SELECTOR).val();
+	await navigator.clipboard.writeText(output);
 }
 
 // adds a listener to the input textarea to try to automatically load after a paste occurs.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class ApplicationVersion {
 	public const /*int*/ MAJOR = 2;
 	public const /*int*/ MINOR = 0;
-	public const /*int*/ PATCH = 5;
+	public const /*int*/ PATCH = 6;
 	public const VERSION = "v" . self::MAJOR . "." . self::MINOR . "." . self::PATCH;
 
 	public static function get(): string {
