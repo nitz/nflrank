@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class ApplicationVersion {
 	public const /*int*/ MAJOR = 2;
 	public const /*int*/ MINOR = 0;
-	public const /*int*/ PATCH = 6;
+	public const /*int*/ PATCH = 7;
 	public const VERSION = "v" . self::MAJOR . "." . self::MINOR . "." . self::PATCH;
 
 	public static function get(): string {
@@ -381,7 +381,7 @@ final class Utilities {
 	}
 
 	// https://stackoverflow.com/a/18602474
-	public function getElapsedTimeAsHumanReadableString($datetime_or_string, bool $full = false): string {
+	public static function getElapsedTimeAsHumanReadableString($datetime_or_string, bool $full = false): string {
 		$now = new \DateTime;
 		$ago = is_a($datetime_or_string, 'DateTime')
 			? $datetime_or_string
@@ -413,7 +413,7 @@ final class Utilities {
 		return $string ? implode(', ', $string) . ' ago' : 'just now';
 	}
 
-	public function getFileMtime($file) {
+	public static function getFileMtime($file) {
 		if (!file_exists($file)) {
 			return false;
 		}
