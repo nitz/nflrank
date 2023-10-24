@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 final class ApplicationVersion {
-	public const /*int*/ MAJOR = 2;
+	public const /*int*/ MAJOR = 3;
 	public const /*int*/ MINOR = 0;
-	public const /*int*/ PATCH = 7;
+	public const /*int*/ PATCH = 0;
 	public const VERSION = "v" . self::MAJOR . "." . self::MINOR . "." . self::PATCH;
 
 	public static function get(): string {

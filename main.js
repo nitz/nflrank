@@ -31,6 +31,7 @@ const AWAY_SYMBOL = '@';
 const STAT_RESULT_WIN = 'W';
 const STAT_RESULT_LOSS = 'L';
 const STAT_RESULT_TIE = 'T';
+const STAT_RESULT_BYE = 'B';
 
 // class names to look up elements
 const CLASS_NAME_TEAM = 'team';
@@ -60,6 +61,7 @@ const CLASS_NAME_DELTA_GLOW_RANK_DOWN = 'delta-glow-rank-down';
 const CLASS_NAME_LAST_FINAL = 'last-final';
 const CLASS_NAME_LAST_LIVE = 'last-live';
 const CLASS_NAME_LAST_SCHEDULED = 'last-scheduled';
+const CLASS_NAME_LAST_BYE = 'last-bye';
 
 // the table columns to create
 const TABLE_COLUMNS = [ '#', '', ['Team', CLASS_NAME_NAME], ['∆', CLASS_NAME_DELTA], 'W-L', 'Pts', 'Strk', ['Last', CLASS_NAME_LAST_HEADER] ];
@@ -280,6 +282,10 @@ class TeamStats {
 		let length = 0;
 
 		this.results.forEach(result => {
+			// ignore byes
+			if (result == STAT_RESULT_BYE) {
+				return;
+			}
 			if (result == mode) {
 				length++;
 			} else {
@@ -291,9 +297,21 @@ class TeamStats {
 		return `${mode}${length}`;
 	}
 
-	// gets the last result for the team (W/L/T)
+	// gets the last non-bye result for the team (W/L/T). Returns PLACEHOLDER_TEXT if none.
 	get lastResult() {
-		return this.results.at(-1);
+		if (this.results.length == 0) {
+			return PLACEHOLDER_TEXT;
+		}
+
+		for (let scan = -1; scan > -this.results.length; --scan) {
+			let last = this.results.at(scan);
+			if (last == STAT_RESULT_BYE) {
+				continue;
+			}
+			return last;
+		}
+
+		return PLACEHOLDER_TEXT;
 	}
 
 	// gets the W-L record for the team, additionally with ties if any.
@@ -313,7 +331,9 @@ class TeamStats {
 		this.results = [];
 		this.last = PLACEHOLDER_TEXT;
 		this.next = PLACEHOLDER_TEXT;
+		this.lastIsPending = false;
 		this.lastIsLive = false;
+		this.lastIsBye = false;
 		this.pointsFor = 0;
 		this.pointsAgainst = 0;
 	}
@@ -332,6 +352,15 @@ class TeamStats {
 			case STAT_RESULT_TIE:
 				this.ties++;
 				break;
+			case STAT_RESULT_BYE:
+			{
+				this.results.push(result);
+				this.last = `BYE`.toUpperCase();
+				this.lastIsPending = false;
+				this.lastIsLive = false;
+				this.lastIsBye = true;
+				return;
+			}
 			default:
 				return;
 		}
@@ -343,6 +372,7 @@ class TeamStats {
 		this.last = `${data_us.score}-${data_them.score} ${away_char}${data_them.teamID}`.toUpperCase();
 		this.lastIsPending = false;
 		this.lastIsLive = false;
+		this.lastIsBye = false;
 	}
 
 	// adds a win to the team's stats
@@ -360,12 +390,17 @@ class TeamStats {
 		this.#addResult(STAT_RESULT_TIE, data_us, data_them);
 	}
 
+	addBye() {
+		this.#addResult(STAT_RESULT_BYE, null, null);
+	}
+
 	// sets the 'last' match as a pending game (when the week is live but the team hasn't played yet.)
 	setPendingMatchup(data_us, data_them) {
 		let away_char = (data_us.isHome != 0) ? HOME_SYMBOL : AWAY_SYMBOL;
 		this.last = `${away_char}${data_them.teamID}`.toUpperCase();
 		this.lastIsPending = true;
 		this.lastIsLive = false;
+		this.lastIsBye = false;
 	}
 
 	// sets the 'last' matchup as a currently live game!
@@ -374,6 +409,7 @@ class TeamStats {
 		this.last = `${data_us.score}-${data_them.score} ${away_char}${data_them.teamID}`.toUpperCase();
 		this.lastIsPending = false;
 		this.lastIsLive = true;
+		this.lastIsBye = false;
 	}
 
 	// sets the 'next' matchup to use for the 'last' column if we are looking at next weeks.
@@ -410,7 +446,7 @@ function calculate_stats(data) {
 
 	const raw = data.fullNflSchedule.nflSchedule;
 	raw.forEach(week => {
-		let week_number = week.week;
+		let week_number = Number(week.week);
 
 		if (week_number < DATA_GAME_WEEKS_START ||
 			week_number > DATA_GAME_WEEKS_END) {
@@ -419,6 +455,11 @@ function calculate_stats(data) {
 
 		let is_current_week = DATA.currentWeek == week_number;
 		let is_next_week = (DATA.currentWeek + 1) == week_number;
+		let is_future = DATA.currentWeek < week_number;
+
+		// a list starting with all teams, any teams not playing for
+		// a given week are on bye.
+		let bye_teams = TEAMS.map(team => team.id);
 
 		week.matchup.forEach(match => {
 			let data0 = match.team[0];
@@ -432,6 +473,9 @@ function calculate_stats(data) {
 
 			let team0 = get_or_add_team_stats(id0);
 			let team1 = get_or_add_team_stats(id1);
+
+			// remove playing teams from the bye array
+			bye_teams = bye_teams.filter(t => t != id0 && t != id1);
 
 			if (match.status == DATA_GAME_STATUS_FINAL) {
 				// score comes in as a string, make sure it's a number so compares are correct.
@@ -463,6 +507,15 @@ function calculate_stats(data) {
 				team1.setNextMatchup(data1, data0);
 			}
 		});
+
+		// any teams left in the bye array should add byes to their results,
+		// if we haven't passed the current week.
+		if (!is_future) {
+			bye_teams.forEach(teamID => {
+				let byeTeam = get_or_add_team_stats(teamID);
+				byeTeam.addBye();
+			});
+		}
 	});
 }
 
@@ -505,8 +558,11 @@ function populate_stats() {
 		last_ele.removeClass(CLASS_NAME_LAST_FINAL);
 		last_ele.removeClass(CLASS_NAME_LAST_LIVE);
 		last_ele.removeClass(CLASS_NAME_LAST_SCHEDULED);
+		last_ele.removeClass(CLASS_NAME_LAST_BYE);
 
-		if (stat.lastIsScheduled) {
+		if (stat.lastIsBye) {
+			last_ele.addClass(CLASS_NAME_LAST_BYE);
+		} else if (stat.lastIsPending) {
 			last_ele.addClass(CLASS_NAME_LAST_SCHEDULED);
 		} else if (stat.lastIsLive) {
 			last_ele.addClass(CLASS_NAME_LAST_LIVE);
@@ -588,7 +644,7 @@ function on_data_fetched(data) {
 	}
 
 	let ele_table = $(TABLE_ELEMENT_SELECTOR);
-	DATA.currentWeek = ele_table.attr(DATA_CURRENT_WEEK_ATTR_NAME);
+	DATA.currentWeek = Number(ele_table.attr(DATA_CURRENT_WEEK_ATTR_NAME));
 
 	// now that we have the data, calculate & populate the stats,
 	// then finally let the user start sorting!
