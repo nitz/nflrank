@@ -25,7 +25,7 @@ final class ApplicationVersion {
 
 final class Main {
 
-	private const /*int*/ LEAGUE_YEAR = 2023;
+	private const /*int*/ LEAGUE_YEAR = 2024;
 	private const /*string*/ DATA_FOLDER = './data/';
 
 	private const /*string*/ DATA_EXPECTED_VERSION = '1.0';
@@ -203,7 +203,7 @@ final class Main {
 
 	// uses the latest data to determine a few stats about the state of the week.
 	private function updateLiveStatus(string $target_file): void {
-		$this->_weekNumber = 0;
+		$this->_weekNumber = 1; // week data starts at 1, there is no week 0!
 		$this->_isLive = false;
 		$this->_isFinal = false;
 		$this->_weekState = "?";
@@ -275,7 +275,7 @@ final class Main {
 
 	// uses the given data file to try and determine which week of the season we're in my checking the current time against kickoff times
 	private function updateWeek(string $target_file): void {
-		$this->_weekNumber = 0;
+		$this->_weekNumber = 1; // week data starts at 1, there is no week 0!
 
 		// if we don't have a data file, assume we are 'live' til we fetch one.
 		if (!file_exists($target_file)) {
