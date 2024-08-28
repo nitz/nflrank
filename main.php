@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 final class ApplicationVersion {
-	public const /*int*/ MAJOR = 3;
+	public const /*int*/ MAJOR = 4;
 	public const /*int*/ MINOR = 0;
 	public const /*int*/ PATCH = 0;
 	public const VERSION = "v" . self::MAJOR . "." . self::MINOR . "." . self::PATCH;
@@ -25,9 +25,6 @@ final class ApplicationVersion {
 
 final class Main {
 
-	private const /*int*/ LEAGUE_YEAR = 2024;
-	private const /*string*/ DATA_FOLDER = './data/';
-
 	private const /*string*/ DATA_EXPECTED_VERSION = '1.0';
 	private const /*int*/ ONE_HOUR_SECONDS = 3600;
 	private const /*string*/ GAME_STATE_SCHEDULED = 'SCHED';
@@ -36,21 +33,28 @@ final class Main {
 
 	public const /*string*/ DEFAULT_TIMEZONE = 'America/New_York';
 
-	private array $_settings = [
-		'data_api_old_uri' => 'https://api.myfantasyleague.com/' . self::LEAGUE_YEAR . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
-		'data_api_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched.json',
-		'data_api_week_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . self::LEAGUE_YEAR . '/nfl_sched_%d.json',
-		'data_file_sched' => self::DATA_FOLDER . 'sched.json',
-		'data_file_week' => self::DATA_FOLDER . 'week.json',
-		'data_file_merged' => self::DATA_FOLDER . 'full.json',
-		'data_update_seconds' => self::ONE_HOUR_SECONDS,
-		'data_update_live_seconds' => 15,
-	];
+	private array $_settings = [];
 
+	private int $_leagueYear = 0;
 	private int $_weekNumber = 0;
 	private bool $_isLive;
 	private bool $_isFinal;
 	private string $_weekState = '?';
+
+	public function __construct(int $leagueYear) {
+		$this->_leagueYear = $leagueYear;
+		$dataFolder = "./data-$leagueYear/";
+		$this->_settings = [
+			'data_api_old_uri' => 'https://api.myfantasyleague.com/' . $this->_leagueYear . '/export?TYPE=nflSchedule&W=ALL&JSON=1',
+			'data_api_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . $this->_leagueYear . '/nfl_sched.json',
+			'data_api_week_uri' => 'https://api.myfantasyleague.com/fflnetdynamic' . $this->_leagueYear . '/nfl_sched_%d.json',
+			'data_file_sched' => $dataFolder . 'sched.json',
+			'data_file_week' => $dataFolder . 'week.json',
+			'data_file_merged' => $dataFolder . 'full.json',
+			'data_update_seconds' => self::ONE_HOUR_SECONDS,
+			'data_update_live_seconds' => 15,
+		];
+	}
 
 	// the main entry point for the application.
 	public function run(): void {
@@ -92,6 +96,11 @@ final class Main {
 		}
 
 		return '?';
+	}
+
+	// returns a number representing the year of the league being sorted
+	public function getLeagueYear(): int {
+		return $this->_leagueYear;
 	}
 
 	// returns a number representing which week of the season it is
@@ -203,10 +212,10 @@ final class Main {
 
 	// uses the latest data to determine a few stats about the state of the week.
 	private function updateLiveStatus(string $target_file): void {
-		$this->_weekNumber = 1; // week data starts at 1, there is no week 0!
+		$this->_weekNumber = 0;
 		$this->_isLive = false;
 		$this->_isFinal = false;
-		$this->_weekState = "?";
+		$this->_weekState = "Preseason";
 
 		// if we don't have a data file, assume we are 'live' til we fetch one.
 		if (!file_exists($target_file)) {
@@ -275,7 +284,7 @@ final class Main {
 
 	// uses the given data file to try and determine which week of the season we're in my checking the current time against kickoff times
 	private function updateWeek(string $target_file): void {
-		$this->_weekNumber = 1; // week data starts at 1, there is no week 0!
+		$this->_weekNumber = 1;
 
 		// if we don't have a data file, assume we are 'live' til we fetch one.
 		if (!file_exists($target_file)) {

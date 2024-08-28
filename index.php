@@ -1,9 +1,13 @@
 <?php
-
 	require_once('main.php');
 
+	// get the league year out of the current date.
+	// if the league year extends into March, we'll have problems :)
+	$twoMonthsAgo = new \DateTime('-2 months');
+	$leagueYear = $twoMonthsAgo->format('Y');
+
 	try	{
-		$app = new Main();
+		$app = new Main($leagueYear);
 		$app->run();
 	} catch (Exception $e) {
 		echo "Error: {$e->getMessage()}";
@@ -46,7 +50,7 @@
 		<div class="main main-flex">
 			<div class="main-item tool">
 				<div class="rank-table">
-					<h5>NFLPR Sort'em! <span class="week-status">Week <?= $app->getCurrentWeek() ?> (<?= $app->getCurrentWeekState() ?>)</span></h5>
+					<h5><span class="app-title">NFLPR Sort'em!</span> <span class="week-status">Week <?= $app->getCurrentWeek() ?> (<?= $app->getCurrentWeekState() ?>)</span> <span class="league-year"><?= $app->getLeagueYear() ?></span></h5>
 					<table id="the-league" data-live-week="<?= $app->getCurrentWeek() ?>" data-now="<?= $now ?>">
 						<thead>
 							<tr></tr>
