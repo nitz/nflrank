@@ -844,6 +844,9 @@ $(document).ready(() => {
 	$.ajaxSetup({
 		cache: false,
 	});
+	
+	// grab the league year
+	let league_year = $('.league-year').text();
 
 	// populate initial data
 	let rank = 1;
@@ -866,5 +869,5 @@ $(document).ready(() => {
 	bind_input_paste_listener();
 
 	// fetch data and populate table with stats!
-	$.getJSON('./data/full.json', on_data_fetched);
+	$.getJSON(`./data-${league_year}/full.json`, on_data_fetched);
 });
